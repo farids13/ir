@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Product } from "@prisma/client";
 const prisma = new PrismaClient();
 
+
 export const POST = async (req:Request) => {
     try {
         const body: Product = await req.json();
@@ -29,4 +30,4 @@ export const GET = async (req:Request) => {
         console.log(error);
         return NextResponse.json("error");
     }
-}
+} 

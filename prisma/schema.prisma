@@ -28,7 +28,14 @@ model Product {
 
 model User{
   id String @id @default(uuid())
-
-  email String @unique
-  password String
+  name String? @db.VarChar(200) 
+  phoneNumber String? @db.VarChar(20)
+  email String @unique @db.VarChar(100)
+  password String @db.Text 
+  createdAt DateTime? @default(now())
+  createdBy String?
+  updatedAt DateTime? @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
 }
