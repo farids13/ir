@@ -1,5 +1,10 @@
+import { InsertUserDTO } from "@/dto/user/InsertUserDTO";
+import { ValidationException } from "@/error/ValidationError";
 import { PrismaClient } from "@prisma/client";
+import { validate } from "class-validator";
+import { NextApiRequest } from "next";
 import { NextResponse } from "next/server";
+import { networkInterfaces } from "os";
 import { z } from "zod";
 
 /**
@@ -25,8 +30,7 @@ export async function GET() {
                 deletedAt: null
             },
             orderBy: {
-                createdAt: 'desc',
-                updatedAt: 'desc'
+                updatedAt: 'desc',
             }
         });
         return NextResponse.json(users);
@@ -38,23 +42,23 @@ export async function GET() {
 // Insert New User
 
 
-export const userInsertSchema = z.object({
-    name: z.string().min(3),
-    phoneNumber: z.string().regex(/^[0-9]{10,12}$/),
-    email: z.string().email(),
-    password: z.string(),
-  });
+
 
 export async function POST(req: Request) {
     const body = await req.json();
-    userInsertSchema.parse(body);
+
+    const insertUserDTO = new InsertUserDTO(body.name, body.email, body.phoneNumber, body.password);
+    const errors = await validate(insertUserDTO);
+
+    if(errors.length > 0) return ValidationException(errors.map(error => Object.values(error.constraints || "")).join(", "));
 
     const checkEmail = await prisma.user.findFirst({
         where: {
             email: body.email
         }
     })
-    if(checkEmail) throw ValidationException('Email already exists');
+    
+    if(checkEmail) return ValidationException('Email already exists');
 
     const user = await prisma.user.create({
         data: body
